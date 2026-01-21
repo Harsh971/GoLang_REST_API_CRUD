@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Harsh971/GoLang_REST_API_CRUD/internal/config"
+	"github.com/Harsh971/GoLang_REST_API_CRUD/internal/http/handlers/student"
 )
 
 func main() {
@@ -22,9 +23,7 @@ func main() {
 	// ------------------------------------ Setup Router
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome..."))
-	})
+	router.HandleFunc("POST /api/students", student.New())
 
 	// ------------------------------------ Setup HTTP Server
 	server := http.Server{
