@@ -53,7 +53,7 @@ func (s *Sqlite) CreateStudent(name string, email string, age int) (int, error) 
 	return int(lastId), nil
 }
 
-func (s *Sqlite) GetStudentById(id int) (types.Student, error) {
+func (s *Sqlite) GetStudentByID(id int) (types.Student, error) {
 	stmt, err := s.Db.Prepare("SELECT * FROM students WHERE id = ? LIMIT 1")
 	if err != nil {
 		return types.Student{}, err
@@ -71,4 +71,30 @@ func (s *Sqlite) GetStudentById(id int) (types.Student, error) {
 	}
 
 	return student, nil
+}
+
+func GetStudentList(s *Sqlite) ([]types.Student, error) {
+	stmt, err := s.Db.Prepare("SELECT * FROM students")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var students []types.Student
+
+	for rows.Next() {
+		var student types.Student
+		err := rows.Scan(&student.Id, &student.Name, &student.Email, &student.Age)
+		if err != nil {
+			return nil, err
+		}
+		students = append(students, student)
+	}
+	return students, nil
 }
