@@ -12,6 +12,7 @@ import (
 
 	"github.com/Harsh971/GoLang_REST_API_CRUD/internal/config"
 	"github.com/Harsh971/GoLang_REST_API_CRUD/internal/http/handlers/student"
+	"github.com/Harsh971/GoLang_REST_API_CRUD/internal/storage/sqlite"
 )
 
 func main() {
@@ -19,11 +20,16 @@ func main() {
 	cfg := config.MustLoad()
 
 	// ------------------------------------ DB Setup
+	storage, err := sqlite.New(cfg)
+	if err != nil {
+		log.Fatal("Failed to initialize database")
+	}
+	slog.Info("Storage Initialized successfully", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
 
 	// ------------------------------------ Setup Router
 	router := http.NewServeMux()
 
-	router.HandleFunc("POST /api/students", student.New())
+	router.HandleFunc("POST /api/students", student.New(storage))
 
 	// ------------------------------------ Setup HTTP Server
 	server := http.Server{
@@ -50,10 +56,10 @@ func main() {
 
 	slog.Info("Shutting Down the server")
 
-	context, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := server.Shutdown(context)
+	err = server.Shutdown(ctx)
 	if err != nil {
 		slog.Error("Failed to shutdown server", slog.String("error", err.Error()))
 	}
